@@ -89,7 +89,30 @@ python -m yhteentoimivuusalusta_mcp.server
 
 ### Claude Desktop Integration
 
+**Option 1: Automatic Setup (Recommended)**
+
+Run the setup script to automatically configure Claude Desktop:
+
+```bash
+python scripts/setup_claude_desktop.py
+```
+
+This will detect your OS, find the correct config location, and add the MCP server configuration.
+
+To preview without writing:
+```bash
+python scripts/setup_claude_desktop.py --print-only
+```
+
+**Option 2: Manual Configuration**
+
 Add to your Claude Desktop configuration (`claude_desktop_config.json`):
+
+| OS | Config Location |
+|----|-----------------|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/Claude/claude_desktop_config.json` |
 
 ```json
 {
@@ -102,6 +125,23 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
   }
 }
 ```
+
+**Option 3: Package as Desktop Extension**
+
+This project includes a `manifest.json` for packaging as an MCP desktop extension:
+
+```bash
+# Install MCPB (MCP Builder)
+npm install -g @anthropic/mcpb
+
+# Package the extension
+mcpb pack
+
+# Install the packaged extension
+mcpb install ./yhteentoimivuusalusta-0.1.0.mcpx
+```
+
+**After configuration, restart Claude Desktop.**
 
 ## Available Tools
 
