@@ -1,0 +1,49 @@
+{
+  "results": [
+    {
+      "codeValue": "01",
+      "uri": "https://koodistot.suomi.fi/code/rakennustieto/RakennuksenKayttotarkoitus/01",
+      "prefLabel": {
+        "fi": "Asuinrakennukset",
+        "en": "Residential buildings"
+      },
+      "definition": {
+        "fi": "Rakennukset, joiden kerrosalasta vähintään puolet on asuinkäytössä"
+      },
+      "status": "VALID",
+      "order": 1
+    },
+    {
+      "codeValue": "011",
+      "uri": "https://koodistot.suomi.fi/code/rakennustieto/RakennuksenKayttotarkoitus/011",
+      "prefLabel": {
+        "fi": "Yhden asunnon talot",
+        "en": "Detached houses"
+      },
+      "definition": {
+        "fi": "Asuinrakennukset, joissa on yksi asunto"
+      },
+      "status": "VALID",
+      "broaderCode": {
+        "codeValue": "01"
+      },
+      "order": 2
+    },
+    {
+      "codeValue": "012",
+      "uri": "https://koodistot.suomi.fi/code/rakennustieto/RakennuksenKayttotarkoitus/012",
+      "prefLabel": {
+        "fi": "Kahden asunnon talot",
+        "en": "Two-dwelling houses"
+      },
+      "definition": {
+        "fi": "Asuinrakennukset, joissa on kaksi asuntoa"
+      },
+      "status": "VALID",
+      "broaderCode": {
+        "codeValue": "01"
+      },
+      "order": 3
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "concepts": [
+    {
+      "id": "concept-fyysinen-rakennuskohde",
+      "uri": "https://sanastot.suomi.fi/terminology/rakymp/concept-fyysinen-rakennuskohde",
+      "label": {
+        "fi": "fyysinen rakennuskohde",
+        "en": "physical building object"
+      },
+      "definition": {
+        "fi": "rakennus, rakennelma tai niiden osa ja erityistä toimintaa varten rakennettu alue",
+        "en": "building, structure or part thereof and area built for special activity"
+      },
+      "terminology": {
+        "prefix": "rakymp"
+      },
+      "status": "VALID",
+      "terms": [
+        {
+          "label": "fyysinen rakennuskohde",
+          "language": "fi",
+          "status": "PREFERRED"
+        },
+        {
+          "label": "rakennuskohde",
+          "language": "fi",
+          "status": "ACCEPTABLE"
+        }
+      ],
+      "broader": [],
+      "narrower": ["concept-rakennus", "concept-rakennelma"],
+      "related": ["concept-rakennusalue"]
+    }
+  ]
+}

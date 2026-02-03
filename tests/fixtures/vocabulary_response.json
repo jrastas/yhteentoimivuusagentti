@@ -1,0 +1,26 @@
+{
+  "terminologies": [
+    {
+      "prefix": "rakymp",
+      "uri": "https://sanastot.suomi.fi/terminology/rakymp",
+      "label": {
+        "fi": "Rakennetun ympäristön sanasto",
+        "en": "Built environment vocabulary"
+      },
+      "description": {
+        "fi": "Rakennetun ympäristön käsitteitä ja termejä"
+      },
+      "status": "VALID",
+      "conceptCount": 500,
+      "languages": ["fi", "en", "sv"],
+      "informationDomains": ["Rakennettu ympäristö"],
+      "organizations": [
+        {
+          "label": {
+            "fi": "Digi- ja väestötietovirasto"
+          }
+        }
+      ]
+    }
+  ]
+}
