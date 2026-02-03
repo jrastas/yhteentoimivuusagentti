@@ -1,0 +1,19 @@
+{
+  "responseObjects": [
+    {
+      "prefix": "rytj-kaava",
+      "uri": "https://tietomallit.suomi.fi/model/rytj-kaava",
+      "label": {
+        "fi": "Kaavatietomalli",
+        "en": "Spatial plan data model"
+      },
+      "description": {
+        "fi": "Maankäytön suunnittelun tietomalli asema- ja yleiskaavoille"
+      },
+      "type": "PROFILE",
+      "status": "VALID",
+      "version": "1.0",
+      "informationDomains": ["Rakennettu ympäristö"]
+    }
+  ]
+}

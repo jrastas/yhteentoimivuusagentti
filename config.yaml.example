@@ -1,0 +1,43 @@
+# Yhteentoimivuusalusta MCP Server Configuration
+# Copy this file to config.yaml and adjust as needed
+
+server:
+  name: "yhteentoimivuusalusta-mcp"
+  version: "0.1.0"
+  transport: "stdio"
+
+apis:
+  sanastot:
+    base_url: "https://sanastot.suomi.fi/terminology-api/api/v1"
+    timeout: 30
+    retry_count: 3
+  tietomallit:
+    base_url: "https://tietomallit.suomi.fi/datamodel-api/api/v2"
+    timeout: 30
+    retry_count: 3
+  koodistot:
+    base_url: "https://koodistot.suomi.fi/codelist-api/api/v1"
+    timeout: 30
+    retry_count: 3
+
+cache:
+  enabled: true
+  backend: "disk"  # or "redis"
+  directory: "~/.cache/yhteentoimivuusalusta"
+  # Redis config (if backend is redis)
+  # redis_url: "redis://localhost:6379/0"
+
+defaults:
+  language: "fi"
+  max_results: 10
+  # Default vocabularies for validation
+  vocabularies:
+    - "rakymp"  # Built environment - most common for building projects
+
+logging:
+  level: "INFO"
+  file: "~/.local/share/yhteentoimivuusalusta/logs/server.log"
+
+fuzzy_matching:
+  enabled: true
+  threshold: 0.8  # 80% similarity required

@@ -106,62 +106,62 @@ yhteentoimivuusalusta-mcp/
 
 # Development Phases
 
-## Phase 1: Foundation (Week 1-2)
+## Phase 1: Foundation (Week 1-2) - COMPLETED
 
 ### Milestone 1.1: API Exploration
-- [ ] Test all three API endpoints with curl/Postman
-- [ ] Document response structures
-- [ ] Identify rate limits and caching needs
-- [ ] Create example request/response library
-- [ ] Verify API authentication requirements (none expected)
+- [x] Test all three API endpoints with curl/Postman
+- [x] Document response structures
+- [x] Identify rate limits and caching needs
+- [x] Create example request/response library
+- [x] Verify API authentication requirements (none expected)
 
 ### Milestone 1.2: MCP Server Setup
-- [ ] Initialize MCP server project (Python)
-- [ ] Set up development environment with uv/pip
-- [ ] Configure basic server structure
-- [ ] Test MCP connection with Claude Desktop
-- [ ] Implement stdio transport
+- [x] Initialize MCP server project (Python)
+- [x] Set up development environment with uv/pip
+- [x] Configure basic server structure
+- [x] Test MCP connection with Claude Desktop
+- [x] Implement stdio transport
 
 ### Milestone 1.3: HTTP Clients
-- [ ] Create Sanastot API client with httpx
-- [ ] Create Tietomallit API client
-- [ ] Create Koodistot API client
-- [ ] Add error handling and retries
-- [ ] Implement response caching with diskcache
+- [x] Create Sanastot API client with httpx
+- [x] Create Tietomallit API client
+- [x] Create Koodistot API client
+- [x] Add error handling and retries
+- [x] Implement response caching with diskcache
 
 **Deliverables:**
-- Working MCP server skeleton
-- Three API clients with unit tests
-- Development environment documentation
+- [x] Working MCP server skeleton
+- [x] Three API clients with unit tests
+- [x] Development environment documentation
 
 ---
 
-## Phase 2: Core Tools (Week 3-4)
+## Phase 2: Core Tools (Week 3-4) - IN PROGRESS
 
 ### Milestone 2.1: Terminology Tools
-- [ ] Implement `search_terminology`
-- [ ] Implement `get_concept_details`
-- [ ] Implement `list_vocabularies`
-- [ ] Add multilingual support (FI/EN/SV)
+- [x] Implement `search_terminology`
+- [x] Implement `get_concept_details`
+- [x] Implement `list_vocabularies`
+- [x] Add multilingual support (FI/EN/SV)
 - [ ] Add fuzzy matching for typos
 
 ### Milestone 2.2: Data Model Tools
-- [ ] Implement `search_datamodel`
-- [ ] Implement `get_datamodel_classes`
-- [ ] Parse class structures and properties
-- [ ] Extract relationships and associations
+- [x] Implement `search_datamodel`
+- [x] Implement `get_datamodel_classes`
+- [x] Parse class structures and properties
+- [x] Extract relationships and associations
 - [ ] Link models to vocabularies
 
 ### Milestone 2.3: Code List Tools
-- [ ] Implement `search_codelist`
-- [ ] Implement `get_codes`
-- [ ] Support hierarchical code navigation
+- [x] Implement `search_codelist`
+- [x] Implement `get_codes`
+- [x] Support hierarchical code navigation
 - [ ] Add CSV export capability
 
 **Deliverables:**
-- Seven working MCP tools
-- Integration tests for each tool
-- Tool documentation with examples
+- [x] Seven working MCP tools
+- [ ] Integration tests for each tool
+- [ ] Tool documentation with examples
 
 ---
 
