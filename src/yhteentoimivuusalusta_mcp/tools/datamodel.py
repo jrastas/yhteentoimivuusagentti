@@ -1,5 +1,6 @@
 """Data model tools for Tietomallit API."""
 
+from yhteentoimivuusalusta_mcp.clients.sanastot import SanastotClient
 from yhteentoimivuusalusta_mcp.clients.tietomallit import TietomalditClient
 from yhteentoimivuusalusta_mcp.models.schemas import Language
 
@@ -136,3 +137,109 @@ async def get_datamodel_classes(
         "class_count": len(results),
         "classes": results,
     }
+
+
+async def get_model_vocabulary_links(
+    tietomallit_client: TietomalditClient,
+    sanastot_client: SanastotClient,
+    model_id: str,
+) -> dict:
+    """Get vocabulary concepts linked to a data model.
+
+    Extracts vocabulary references from data model classes and properties,
+    then resolves them to actual concept definitions.
+
+    Args:
+        tietomallit_client: Tietomallit API client.
+        sanastot_client: Sanastot API client.
+        model_id: The data model identifier (e.g., 'rytj-kaava').
+
+    Returns:
+        Dictionary with vocabulary links.
+    """
+    # Get model info
+    model = await tietomallit_client.get_model(model_id)
+    if not model:
+        return {
+            "error": f"Model not found: {model_id}",
+            "model_id": model_id,
+        }
+
+    # Get classes
+    classes = await tietomallit_client.get_model_classes(model_id)
+
+    # Collect vocabulary references
+    vocab_refs: dict[str, set[str]] = {}  # vocabulary_id -> set of concept URIs
+
+    for cls in classes:
+        # Check class vocabulary references
+        for ref in cls.vocabulary_references:
+            if isinstance(ref, dict) and "uri" in ref:
+                uri = ref["uri"]
+                vocab_id = _extract_vocabulary_id(uri)
+                if vocab_id:
+                    if vocab_id not in vocab_refs:
+                        vocab_refs[vocab_id] = set()
+                    vocab_refs[vocab_id].add(uri)
+
+        # Check property vocabulary references
+        for prop in cls.properties:
+            if prop.vocabulary_reference:
+                uri = prop.vocabulary_reference
+                vocab_id = _extract_vocabulary_id(uri)
+                if vocab_id:
+                    if vocab_id not in vocab_refs:
+                        vocab_refs[vocab_id] = set()
+                    vocab_refs[vocab_id].add(uri)
+
+    # Resolve concepts from vocabularies
+    resolved_concepts = []
+    for vocab_id, uris in vocab_refs.items():
+        # Get vocabulary info
+        vocab = await sanastot_client.get_vocabulary(vocab_id)
+        if vocab:
+            for uri in list(uris)[:10]:  # Limit per vocabulary
+                # Extract concept ID from URI
+                concept_id = _extract_concept_id(uri)
+                if concept_id:
+                    concept = await sanastot_client.get_concept(vocab_id, concept_id)
+                    if concept:
+                        resolved_concepts.append({
+                            "vocabulary_id": vocab_id,
+                            "vocabulary_label": vocab.label.get(Language.FI),
+                            "concept_id": concept.id,
+                            "concept_label": concept.preferred_label.get(Language.FI),
+                            "definition": concept.definition.get(Language.FI)
+                            if concept.definition
+                            else None,
+                            "uri": uri,
+                        })
+
+    return {
+        "model_id": model_id,
+        "model_label": model.label.get(Language.FI),
+        "vocabularies_referenced": list(vocab_refs.keys()),
+        "concept_count": len(resolved_concepts),
+        "concepts": resolved_concepts,
+    }
+
+
+def _extract_vocabulary_id(uri: str) -> str | None:
+    """Extract vocabulary ID from a sanastot URI."""
+    # URIs look like: https://sanastot.suomi.fi/terminology/rakymp/concept-xxx
+    if "sanastot.suomi.fi" in uri and "/terminology/" in uri:
+        parts = uri.split("/terminology/")
+        if len(parts) > 1:
+            vocab_part = parts[1].split("/")[0]
+            return vocab_part
+    return None
+
+
+def _extract_concept_id(uri: str) -> str | None:
+    """Extract concept ID from a sanastot URI."""
+    # URIs look like: https://sanastot.suomi.fi/terminology/rakymp/concept-xxx
+    if "sanastot.suomi.fi" in uri:
+        parts = uri.rstrip("/").split("/")
+        if parts:
+            return parts[-1]
+    return None

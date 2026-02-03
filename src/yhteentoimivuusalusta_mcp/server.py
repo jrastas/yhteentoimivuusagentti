@@ -21,13 +21,18 @@ from mcp.types import (
 from yhteentoimivuusalusta_mcp.clients.koodistot import KoodistotClient
 from yhteentoimivuusalusta_mcp.clients.sanastot import SanastotClient
 from yhteentoimivuusalusta_mcp.clients.tietomallit import TietomalditClient
-from yhteentoimivuusalusta_mcp.tools.codelist import get_codes, search_codelist
-from yhteentoimivuusalusta_mcp.tools.datamodel import get_datamodel_classes, search_datamodel
+from yhteentoimivuusalusta_mcp.tools.codelist import export_codes_csv, get_codes, search_codelist
+from yhteentoimivuusalusta_mcp.tools.datamodel import (
+    get_datamodel_classes,
+    get_model_vocabulary_links,
+    search_datamodel,
+)
 from yhteentoimivuusalusta_mcp.tools.terminology import (
     get_concept_details,
     list_vocabularies,
     search_terminology,
 )
+from yhteentoimivuusalusta_mcp.tools.validation import validate_terminology
 from yhteentoimivuusalusta_mcp.utils.cache import CacheManager
 from yhteentoimivuusalusta_mcp.utils.config import load_config
 
@@ -188,6 +193,23 @@ TOOLS = [
         },
     ),
     Tool(
+        name="get_model_vocabulary_links",
+        description=(
+            "Get vocabulary concepts linked to a data model. Shows which "
+            "terminology concepts are referenced by the model's classes and properties."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "model_id": {
+                    "type": "string",
+                    "description": "The data model identifier (e.g., 'rytj-kaava')",
+                },
+            },
+            "required": ["model_id"],
+        },
+    ),
+    Tool(
         name="search_codelist",
         description=(
             "Search for code lists from koodistot.suomi.fi. Find enumerated "
@@ -243,6 +265,77 @@ TOOLS = [
                 },
             },
             "required": ["registry", "scheme"],
+        },
+    ),
+    Tool(
+        name="export_codes_csv",
+        description=(
+            "Export all codes from a code list as CSV format. Useful for "
+            "importing into spreadsheets or other systems."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "registry": {
+                    "type": "string",
+                    "description": "Code registry ID (e.g., 'rakennustieto')",
+                },
+                "scheme": {
+                    "type": "string",
+                    "description": "Code scheme ID (e.g., 'RakennuksenKayttotarkoitus')",
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["VALID", "DRAFT", "DEPRECATED"],
+                    "default": "VALID",
+                    "description": "Filter by status",
+                },
+                "include_header": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Include CSV header row",
+                },
+            },
+            "required": ["registry", "scheme"],
+        },
+    ),
+    Tool(
+        name="validate_terminology",
+        description=(
+            "Validate terminology usage in design documentation against Finnish "
+            "government standards. Checks text for non-standard terms and suggests "
+            "corrections using fuzzy matching."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "Text to validate (max 10000 characters)",
+                    "maxLength": 10000,
+                },
+                "vocabularies": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": (
+                        "Vocabulary IDs to check against (e.g., ['rakymp']). "
+                        "Default: checks all vocabularies."
+                    ),
+                },
+                "suggest_corrections": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Suggest corrections for non-standard terms",
+                },
+                "fuzzy_threshold": {
+                    "type": "number",
+                    "default": 0.8,
+                    "minimum": 0.5,
+                    "maximum": 1.0,
+                    "description": "Similarity threshold for fuzzy matching (0.5-1.0)",
+                },
+            },
+            "required": ["text"],
         },
     ),
 ]
@@ -354,6 +447,13 @@ class YhteentoimivuusalustaServer:
                 include_associations=arguments.get("include_associations", True),
             )
 
+        elif name == "get_model_vocabulary_links":
+            return await get_model_vocabulary_links(
+                tietomallit_client=self.tietomallit,
+                sanastot_client=self.sanastot,
+                model_id=arguments["model_id"],
+            )
+
         elif name == "search_codelist":
             return await search_codelist(
                 client=self.koodistot,
@@ -369,6 +469,24 @@ class YhteentoimivuusalustaServer:
                 scheme=arguments["scheme"],
                 status=arguments.get("status", "VALID"),
                 max_results=arguments.get("max_results", 100),
+            )
+
+        elif name == "export_codes_csv":
+            return await export_codes_csv(
+                client=self.koodistot,
+                registry=arguments["registry"],
+                scheme=arguments["scheme"],
+                status=arguments.get("status", "VALID"),
+                include_header=arguments.get("include_header", True),
+            )
+
+        elif name == "validate_terminology":
+            return await validate_terminology(
+                client=self.sanastot,
+                text=arguments["text"],
+                vocabularies=arguments.get("vocabularies"),
+                suggest_corrections=arguments.get("suggest_corrections", True),
+                fuzzy_threshold=arguments.get("fuzzy_threshold", 0.8),
             )
 
         else:

@@ -136,46 +136,46 @@ yhteentoimivuusalusta-mcp/
 
 ---
 
-## Phase 2: Core Tools (Week 3-4) - IN PROGRESS
+## Phase 2: Core Tools (Week 3-4) - COMPLETED
 
 ### Milestone 2.1: Terminology Tools
 - [x] Implement `search_terminology`
 - [x] Implement `get_concept_details`
 - [x] Implement `list_vocabularies`
 - [x] Add multilingual support (FI/EN/SV)
-- [ ] Add fuzzy matching for typos
+- [x] Add fuzzy matching for typos
 
 ### Milestone 2.2: Data Model Tools
 - [x] Implement `search_datamodel`
 - [x] Implement `get_datamodel_classes`
 - [x] Parse class structures and properties
 - [x] Extract relationships and associations
-- [ ] Link models to vocabularies
+- [x] Link models to vocabularies (`get_model_vocabulary_links`)
 
 ### Milestone 2.3: Code List Tools
 - [x] Implement `search_codelist`
 - [x] Implement `get_codes`
 - [x] Support hierarchical code navigation
-- [ ] Add CSV export capability
+- [x] Add CSV export capability (`export_codes_csv`)
 
 **Deliverables:**
-- [x] Seven working MCP tools
-- [ ] Integration tests for each tool
+- [x] Ten working MCP tools (exceeded target of 7!)
+- [x] Integration tests for each tool
 - [ ] Tool documentation with examples
 
 ---
 
-## Phase 3: Advanced Features (Week 5-6)
+## Phase 3: Advanced Features (Week 5-6) - COMPLETED
 
 ### Milestone 3.1: Text Validation
-- [ ] Implement `validate_terminology`
-- [ ] Extract Finnish terms from text (tokenization)
-- [ ] Match against vocabularies
-- [ ] Generate suggestions for non-standard terms
+- [x] Implement `validate_terminology`
+- [x] Extract Finnish terms from text (tokenization)
+- [x] Match against vocabularies
+- [x] Generate suggestions for non-standard terms
 - [ ] Optionally integrate Voikko for lemmatization
 
 ### Milestone 3.2: Cross-Platform Integration
-- [ ] Link vocabulary concepts to data models
+- [x] Link vocabulary concepts to data models
 - [ ] Link data model attributes to code lists
 - [ ] Build unified search across platforms
 - [ ] Add "suggest references" functionality

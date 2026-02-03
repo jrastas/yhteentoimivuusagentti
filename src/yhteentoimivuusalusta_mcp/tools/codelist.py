@@ -1,5 +1,8 @@
 """Code list tools for Koodistot API."""
 
+import csv
+import io
+
 from yhteentoimivuusalusta_mcp.clients.koodistot import KoodistotClient
 from yhteentoimivuusalusta_mcp.models.schemas import Language
 
@@ -109,4 +112,83 @@ async def get_codes(
         "status_filter": status,
         "code_count": len(code_results),
         "codes": code_results,
+    }
+
+
+async def export_codes_csv(
+    client: KoodistotClient,
+    registry: str,
+    scheme: str,
+    status: str = "VALID",
+    include_header: bool = True,
+) -> dict:
+    """Export codes from a code list as CSV format.
+
+    Args:
+        client: Koodistot API client.
+        registry: Code registry ID.
+        scheme: Code scheme ID.
+        status: Filter by status (VALID, DRAFT, DEPRECATED).
+        include_header: Include CSV header row.
+
+    Returns:
+        Dictionary with CSV content and metadata.
+    """
+    # Get scheme info first
+    code_scheme = await client.get_code_scheme(registry, scheme)
+    if not code_scheme:
+        return {
+            "error": f"Code scheme not found: {registry}/{scheme}",
+            "registry": registry,
+            "scheme": scheme,
+        }
+
+    # Get all codes (increased limit for export)
+    codes = await client.get_codes(
+        registry=registry,
+        scheme=scheme,
+        status=status,
+        page_size=1000,
+    )
+
+    # Generate CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    if include_header:
+        writer.writerow([
+            "CODEVALUE",
+            "URI",
+            "STATUS",
+            "PREFLABEL_FI",
+            "PREFLABEL_EN",
+            "PREFLABEL_SV",
+            "DEFINITION_FI",
+            "BROADERCODE",
+            "ORDER",
+        ])
+
+    for code in codes:
+        writer.writerow([
+            code.code,
+            str(code.uri),
+            code.status.value,
+            code.label.fi or "",
+            code.label.en or "",
+            code.label.sv or "",
+            code.definition.fi if code.definition else "",
+            code.broader_code or "",
+            code.order or "",
+        ])
+
+    csv_content = output.getvalue()
+    output.close()
+
+    return {
+        "registry": registry,
+        "scheme": scheme,
+        "scheme_label": code_scheme.label.get(Language.FI),
+        "format": "csv",
+        "code_count": len(codes),
+        "csv_content": csv_content,
     }
