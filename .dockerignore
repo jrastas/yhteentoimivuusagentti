@@ -1,10 +1,13 @@
+# Git
+.git/
+.gitignore
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -39,6 +42,7 @@ ENV/
 htmlcov/
 .tox/
 .nox/
+tests/
 
 # Cache
 .cache/
@@ -49,10 +53,17 @@ htmlcov/
 Thumbs.db
 
 # Docker
-.docker/
+Dockerfile
+docker-compose.yml
+.dockerignore
 
-# Claude Code
-.claude/
+# Documentation (not needed in container)
+docs/
+*.md
+!README.md
 
-# Local config (user-specific)
+# Build artifacts
+build/
+
+# Local config (will be mounted or use defaults)
 config.yaml

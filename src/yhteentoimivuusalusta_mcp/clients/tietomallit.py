@@ -20,12 +20,13 @@ logger = logging.getLogger(__name__)
 class TietomalditClient(BaseClient):
     """Client for the Tietomallit (Data Models) API.
 
-    API Base: https://tietomallit.suomi.fi/datamodel-api/api/v2/
+    API Base: https://tietomallit.suomi.fi/datamodel-api/
+    API Version: v2
     """
 
     def __init__(
         self,
-        base_url: str = "https://tietomallit.suomi.fi/datamodel-api/api/v2",
+        base_url: str = "https://tietomallit.suomi.fi/datamodel-api",
         timeout: int = 30,
         retry_count: int = 3,
         cache: CacheManager | None = None,
@@ -61,13 +62,13 @@ class TietomalditClient(BaseClient):
             params["domain"] = domain
 
         data = await self.get(
-            "/frontend/searchModels",
+            "/v2/frontend/search-models",
             params=params,
             cache_prefix="search",
         )
 
         models = []
-        for item in data.get("models", data.get("responseObjects", [])):
+        for item in data.get("models", data.get("responseObjects", data.get("results", []))):
             model = self._parse_model(item)
             if model:
                 models.append(model)
@@ -85,7 +86,7 @@ class TietomalditClient(BaseClient):
         """
         try:
             data = await self.get(
-                f"/frontend/model/{model_id}",
+                f"/v2/model/{model_id}",
                 cache_prefix="data_model",
             )
             return self._parse_model(data)
@@ -107,16 +108,20 @@ class TietomalditClient(BaseClient):
         Returns:
             List of classes in the model.
         """
-        params = {"pageSize": page_size}
+        params: dict[str, Any] = {
+            "pageSize": page_size,
+            "groups": model_id,
+            "resourceTypes": "CLASS",
+        }
 
         data = await self.get(
-            f"/frontend/model/{model_id}/classes",
+            "/v2/frontend/search-internal-resources",
             params=params,
             cache_prefix="classes",
         )
 
         classes = []
-        for item in data.get("classes", data.get("responseObjects", [])):
+        for item in data.get("classes", data.get("responseObjects", data.get("results", []))):
             cls = self._parse_class(item)
             if cls:
                 classes.append(cls)
@@ -137,15 +142,22 @@ class TietomalditClient(BaseClient):
         Returns:
             DataModelClass object or None if not found.
         """
-        try:
-            data = await self.get(
-                f"/frontend/model/{model_id}/class/{class_id}",
-                cache_prefix="class",
-            )
-            return self._parse_class(data)
-        except Exception as e:
-            logger.error(f"Failed to get class {class_id}: {e}")
-            return None
+        # Try library endpoint first, then profile endpoint
+        for endpoint in [
+            f"/v2/class/library/{model_id}/{class_id}",
+            f"/v2/class/profile/{model_id}/{class_id}",
+        ]:
+            try:
+                data = await self.get(
+                    endpoint,
+                    cache_prefix="class",
+                )
+                return self._parse_class(data)
+            except Exception:
+                continue
+
+        logger.error(f"Failed to get class {class_id} from model {model_id}")
+        return None
 
     async def list_models(
         self,
@@ -171,13 +183,13 @@ class TietomalditClient(BaseClient):
             params["type"] = model_type
 
         data = await self.get(
-            "/frontend/searchModels",
+            "/v2/frontend/search-models",
             params=params,
             cache_prefix="data_models",
         )
 
         models = []
-        for item in data.get("models", data.get("responseObjects", [])):
+        for item in data.get("models", data.get("responseObjects", data.get("results", []))):
             model = self._parse_model(item)
             if model:
                 models.append(model)

@@ -1,0 +1,65 @@
+# Docker Compose for Yhteentoimivuusalusta MCP Server
+# Use: docker compose build && docker compose run --rm mcp
+
+services:
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: yhteentoimivuusalusta-mcp:latest
+    container_name: yhteentoimivuusalusta-mcp
+
+    # MCP uses stdio, so we need interactive mode
+    stdin_open: true
+    tty: false
+
+    # Persistent cache volume
+    volumes:
+      - mcp-cache:/app/cache
+      # Optional: mount custom config
+      # - ./config.yaml:/app/config.yaml:ro
+
+    # Security settings
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=10M
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    # Network isolation - only allow required hosts
+    # Note: DNS resolution requires some network access
+    # For stricter isolation, use network_mode: none and explicit --add-host
+    networks:
+      - mcp-network
+
+  # Optional: Test runner for development
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app:ro
+      - test-cache:/app/.pytest_cache
+    command: ["pytest", "-v"]
+    profiles:
+      - test
+
+volumes:
+  mcp-cache:
+    name: yhteentoimivuusalusta-cache
+  test-cache:
+
+networks:
+  mcp-network:
+    driver: bridge

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "yhteentoimivuusalusta": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--memory=512m",
+        "--cpus=1.0",
+        "-v", "yhteentoimivuusalusta-cache:/app/cache",
+        "yhteentoimivuusalusta-mcp:latest"
+      ]
+    }
+  }
+}

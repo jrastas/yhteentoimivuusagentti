@@ -51,10 +51,10 @@ class Config(BaseModel):
     """Main configuration model."""
 
     sanastot: APIConfig = APIConfig(
-        base_url="https://sanastot.suomi.fi/terminology-api/api/v1"
+        base_url="https://sanastot.suomi.fi/terminology-api"
     )
     tietomallit: APIConfig = APIConfig(
-        base_url="https://tietomallit.suomi.fi/datamodel-api/api/v2"
+        base_url="https://tietomallit.suomi.fi/datamodel-api"
     )
     koodistot: APIConfig = APIConfig(
         base_url="https://koodistot.suomi.fi/codelist-api/api/v1"

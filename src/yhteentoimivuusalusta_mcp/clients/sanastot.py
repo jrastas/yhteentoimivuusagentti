@@ -20,12 +20,13 @@ logger = logging.getLogger(__name__)
 class SanastotClient(BaseClient):
     """Client for the Sanastot (Terminologies) API.
 
-    API Base: https://sanastot.suomi.fi/terminology-api/api/v1/
+    API Base: https://sanastot.suomi.fi/terminology-api/
+    API Version: v2 (frontend endpoints) and v1 (integration endpoints)
     """
 
     def __init__(
         self,
-        base_url: str = "https://sanastot.suomi.fi/terminology-api/api/v1",
+        base_url: str = "https://sanastot.suomi.fi/terminology-api",
         timeout: int = 30,
         retry_count: int = 3,
         cache: CacheManager | None = None,
@@ -57,13 +58,13 @@ class SanastotClient(BaseClient):
             params["status"] = status
 
         data = await self.get(
-            "/frontend/terminologies",
+            "/v2/frontend/search-terminologies",
             params=params,
             cache_prefix="vocabularies",
         )
 
         vocabularies = []
-        for item in data.get("terminologies", []):
+        for item in data.get("responseObjects", data.get("terminologies", data.get("results", []))):
             vocab = self._parse_vocabulary(item)
             if vocab:
                 vocabularies.append(vocab)
@@ -81,7 +82,7 @@ class SanastotClient(BaseClient):
         """
         try:
             data = await self.get(
-                f"/frontend/terminology/{vocabulary_id}",
+                f"/v2/terminology/{vocabulary_id}",
                 cache_prefix="vocabulary",
             )
             return self._parse_vocabulary(data)
@@ -113,16 +114,16 @@ class SanastotClient(BaseClient):
             "pageSize": max_results,
         }
         if vocabulary_id:
-            params["terminologyId"] = vocabulary_id
+            params["namespace"] = f"https://iri.suomi.fi/terminology/{vocabulary_id}/"
 
         data = await self.get(
-            "/frontend/searchConcept",
+            "/v2/frontend/search-concepts",
             params=params,
             cache_prefix="search",
         )
 
         concepts = []
-        for item in data.get("concepts", []):
+        for item in data.get("responseObjects", data.get("concepts", data.get("results", []))):
             concept = self._parse_concept(item)
             if concept:
                 concepts.append(concept)
@@ -145,7 +146,7 @@ class SanastotClient(BaseClient):
         """
         try:
             data = await self.get(
-                f"/frontend/terminology/{vocabulary_id}/concept/{concept_id}",
+                f"/v2/concept/{vocabulary_id}/{concept_id}",
                 cache_prefix="concept",
             )
             return self._parse_concept(data, vocabulary_id)
@@ -169,19 +170,20 @@ class SanastotClient(BaseClient):
         Returns:
             List of concepts.
         """
-        params = {
+        params: dict[str, Any] = {
             "pageSize": page_size,
             "pageFrom": page,
+            "namespace": f"https://iri.suomi.fi/terminology/{vocabulary_id}/",
         }
 
         data = await self.get(
-            f"/frontend/terminology/{vocabulary_id}/concepts",
+            "/v2/frontend/search-concepts",
             params=params,
             cache_prefix="concepts",
         )
 
         concepts = []
-        for item in data.get("concepts", []):
+        for item in data.get("responseObjects", data.get("concepts", data.get("results", []))):
             concept = self._parse_concept(item, vocabulary_id)
             if concept:
                 concepts.append(concept)
@@ -212,15 +214,17 @@ class SanastotClient(BaseClient):
                 except ValueError:
                     pass
 
+            # Organizations in new API is a list of UUIDs, not objects
+            orgs = data.get("organizations", [])
+            org_str = orgs[0] if orgs and isinstance(orgs[0], str) else None
+
             return Vocabulary(
                 id=data.get("prefix", data.get("id", "")),
                 uri=data.get("uri", ""),
                 label=label,
                 description=description,
-                domain=data.get("informationDomains", []),
-                organization=data.get("organizations", [{}])[0].get("label", {}).get("fi")
-                if data.get("organizations")
-                else None,
+                domain=data.get("groups", data.get("informationDomains", [])),
+                organization=org_str,
                 concept_count=data.get("conceptCount", 0),
                 status=self._parse_status(data.get("status", "VALID")),
                 languages=languages,
@@ -270,10 +274,19 @@ class SanastotClient(BaseClient):
             narrower = [extract_id(r) for r in data.get("narrower", [])]
             related = [extract_id(r) for r in data.get("related", [])]
 
+            # Extract vocabulary ID from namespace or terminology field
+            vocab_id = vocabulary_id or ""
+            if data.get("terminology") and isinstance(data["terminology"], dict):
+                vocab_id = data["terminology"].get("prefix", vocab_id)
+            elif data.get("namespace"):
+                # Extract prefix from namespace URL like "https://iri.suomi.fi/terminology/rakymp/"
+                ns = data["namespace"].rstrip("/")
+                vocab_id = ns.split("/")[-1] if "/" in ns else vocab_id
+
             return Concept(
-                id=data.get("id", data.get("identifier", "")),
+                id=data.get("identifier", data.get("id", "")),
                 uri=data.get("uri", ""),
-                vocabulary_id=data.get("terminology", {}).get("prefix", vocabulary_id or ""),
+                vocabulary_id=vocab_id,
                 preferred_label=label,
                 definition=definition,
                 terms=terms,
