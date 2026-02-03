@@ -203,7 +203,7 @@ If API calls timeout, the container may have network issues:
 # Test network connectivity
 docker run --rm yhteentoimivuusalusta-mcp:latest python -c "
 import httpx
-r = httpx.get('https://sanastot.suomi.fi/terminology-api/api/v1/frontend/terminologies', timeout=10)
+r = httpx.get('https://sanastot.suomi.fi/terminology-api/v2/frontend/search-terminologies?pageSize=1', timeout=10)
 print(f'Status: {r.status_code}')
 "
 ```

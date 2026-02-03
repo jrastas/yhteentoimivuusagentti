@@ -25,8 +25,25 @@ This tool helps when writing design documents, technical specifications, or arch
 
 - Python 3.11 or higher
 - pip or uv package manager
+- Docker (optional, recommended for sandboxed execution)
 
-### Install from source
+### Option 1: Docker (Recommended)
+
+Docker provides sandboxed execution with minimal attack surface:
+
+```bash
+# Clone and build
+git clone https://github.com/yaskael/yhteentoimivuusagentti.git
+cd yhteentoimivuusagentti
+docker build -t yhteentoimivuusalusta-mcp:latest .
+
+# Test the build
+docker run --rm yhteentoimivuusalusta-mcp:latest python -c "import yhteentoimivuusalusta_mcp.server; print('OK')"
+```
+
+See [docs/DOCKER.md](docs/DOCKER.md) for detailed Docker setup instructions.
+
+### Option 2: Install from source
 
 ```bash
 # Clone the repository
@@ -72,9 +89,9 @@ rate_limit:
 # API endpoints (defaults shown)
 apis:
   sanastot:
-    base_url: https://sanastot.suomi.fi/terminology-api/api/v1
+    base_url: https://sanastot.suomi.fi/terminology-api
   tietomallit:
-    base_url: https://tietomallit.suomi.fi/datamodel-api/api/v2
+    base_url: https://tietomallit.suomi.fi/datamodel-api
   koodistot:
     base_url: https://koodistot.suomi.fi/codelist-api/api/v1
 ```
@@ -126,7 +143,33 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 }
 ```
 
-**Option 3: Install as Desktop Extension (MCPB)**
+**Option 3: Docker (Sandboxed)**
+
+For enhanced security, run the MCP server in a Docker container:
+
+```json
+{
+  "mcpServers": {
+    "yhteentoimivuusalusta": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--memory=512m", "--cpus=1.0",
+        "-v", "yhteentoimivuusalusta-cache:/app/cache",
+        "yhteentoimivuusalusta-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+This provides:
+- Isolated filesystem (no access to host files)
+- Memory and CPU limits
+- Non-root execution
+- Persistent cache via Docker volume
+
+**Option 4: Install as Desktop Extension (MCPB)**
 
 This project includes a `manifest.json` (v0.3) for MCPB desktop extensions:
 
@@ -298,7 +341,11 @@ yhteentoimivuusalusta-mcp/
 │           ├── cache.py           # Caching utilities
 │           ├── config.py          # Configuration loader
 │           └── fuzzy.py           # Fuzzy matching
+├── docs/
+│   └── DOCKER.md                  # Docker setup guide
 ├── tests/
+├── Dockerfile                     # Docker build configuration
+├── docker-compose.yml             # Docker Compose configuration
 ├── pyproject.toml
 └── config.yaml.example
 ```
