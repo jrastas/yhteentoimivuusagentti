@@ -89,7 +89,30 @@ python -m yhteentoimivuusalusta_mcp.server
 
 ### Claude Desktop Integration
 
+**Option 1: Automatic Setup (Recommended)**
+
+Run the setup script to automatically configure Claude Desktop:
+
+```bash
+python scripts/setup_claude_desktop.py
+```
+
+This will detect your OS, find the correct config location, and add the MCP server configuration.
+
+To preview without writing:
+```bash
+python scripts/setup_claude_desktop.py --print-only
+```
+
+**Option 2: Manual Configuration**
+
 Add to your Claude Desktop configuration (`claude_desktop_config.json`):
+
+| OS | Config Location |
+|----|-----------------|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/Claude/claude_desktop_config.json` |
 
 ```json
 {
@@ -102,6 +125,8 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
   }
 }
 ```
+
+**After configuration, restart Claude Desktop.**
 
 ## Available Tools
 

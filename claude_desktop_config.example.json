@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "yhteentoimivuusalusta": {
+      "command": "python",
+      "args": ["-m", "yhteentoimivuusalusta_mcp.server"],
+      "cwd": "/path/to/yhteentoimivuusagentti"
+    }
+  }
+}
