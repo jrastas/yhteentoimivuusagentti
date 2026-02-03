@@ -32,6 +32,11 @@ from yhteentoimivuusalusta_mcp.tools.terminology import (
     list_vocabularies,
     search_terminology,
 )
+from yhteentoimivuusalusta_mcp.tools.unified import (
+    get_codelist_for_attribute,
+    suggest_references,
+    unified_search,
+)
 from yhteentoimivuusalusta_mcp.tools.validation import validate_terminology
 from yhteentoimivuusalusta_mcp.utils.cache import CacheManager
 from yhteentoimivuusalusta_mcp.utils.config import load_config
@@ -338,6 +343,86 @@ TOOLS = [
             "required": ["text"],
         },
     ),
+    Tool(
+        name="unified_search",
+        description=(
+            "Search across all Yhteentoimivuusalusta platforms simultaneously. "
+            "Finds related terminologies, data models, and code lists in one query."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search term to find across all platforms",
+                },
+                "search_terminologies": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Include terminology search (sanastot.suomi.fi)",
+                },
+                "search_datamodels": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Include data model search (tietomallit.suomi.fi)",
+                },
+                "search_codelists": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Include code list search (koodistot.suomi.fi)",
+                },
+                "max_results_per_platform": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "Maximum results per platform",
+                },
+            },
+            "required": ["query"],
+        },
+    ),
+    Tool(
+        name="suggest_references",
+        description=(
+            "Analyze text and suggest relevant standards to reference. "
+            "Extracts key terms and finds matching vocabularies, data models, and code lists."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "Text to analyze (e.g., design document excerpt)",
+                },
+                "max_suggestions": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Maximum suggestions per category",
+                },
+            },
+            "required": ["text"],
+        },
+    ),
+    Tool(
+        name="get_codelist_for_attribute",
+        description=(
+            "Find code lists that could be used for data model attributes. "
+            "Analyzes a data model and suggests relevant code lists for its properties."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "model_id": {
+                    "type": "string",
+                    "description": "The data model identifier (e.g., 'rytj-kaava')",
+                },
+                "class_name": {
+                    "type": "string",
+                    "description": "Optional: filter to specific class",
+                },
+            },
+            "required": ["model_id"],
+        },
+    ),
 ]
 
 
@@ -487,6 +572,35 @@ class YhteentoimivuusalustaServer:
                 vocabularies=arguments.get("vocabularies"),
                 suggest_corrections=arguments.get("suggest_corrections", True),
                 fuzzy_threshold=arguments.get("fuzzy_threshold", 0.8),
+            )
+
+        elif name == "unified_search":
+            return await unified_search(
+                sanastot_client=self.sanastot,
+                tietomallit_client=self.tietomallit,
+                koodistot_client=self.koodistot,
+                query=arguments["query"],
+                search_terminologies=arguments.get("search_terminologies", True),
+                search_datamodels=arguments.get("search_datamodels", True),
+                search_codelists=arguments.get("search_codelists", True),
+                max_results_per_platform=arguments.get("max_results_per_platform", 5),
+            )
+
+        elif name == "suggest_references":
+            return await suggest_references(
+                sanastot_client=self.sanastot,
+                tietomallit_client=self.tietomallit,
+                koodistot_client=self.koodistot,
+                text=arguments["text"],
+                max_suggestions=arguments.get("max_suggestions", 10),
+            )
+
+        elif name == "get_codelist_for_attribute":
+            return await get_codelist_for_attribute(
+                tietomallit_client=self.tietomallit,
+                koodistot_client=self.koodistot,
+                model_id=arguments["model_id"],
+                class_name=arguments.get("class_name"),
             )
 
         else:

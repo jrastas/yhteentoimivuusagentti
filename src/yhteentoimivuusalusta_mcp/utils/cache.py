@@ -23,6 +23,9 @@ CACHE_TTL = {
     "codes": 3600,  # 1 hour
 }
 
+# Stale cache TTL - how long to keep data for offline mode (7 days)
+STALE_CACHE_TTL = 604800
+
 
 class CacheManager:
     """Manages caching for API responses."""
@@ -110,6 +113,31 @@ class CacheManager:
         key = self._make_key(prefix, *args, **kwargs)
         expire = ttl if ttl is not None else CACHE_TTL.get(prefix, 3600)
         self._cache.set(key, value, expire=expire)
+
+        # Also store a stale backup with longer TTL for offline mode
+        stale_key = f"stale:{key}"
+        self._cache.set(stale_key, value, expire=STALE_CACHE_TTL)
+
+    def get_stale(self, prefix: str, *args: Any, **kwargs: Any) -> Any | None:
+        """Get a stale value from cache for offline mode.
+
+        This retrieves data that may be older but is kept longer
+        for offline fallback scenarios.
+
+        Args:
+            prefix: Key prefix.
+            *args: Key arguments.
+            **kwargs: Key keyword arguments.
+
+        Returns:
+            Stale cached value or None if not found.
+        """
+        if not self.enabled or not self._cache:
+            return None
+
+        key = self._make_key(prefix, *args, **kwargs)
+        stale_key = f"stale:{key}"
+        return self._cache.get(stale_key)
 
     def delete(self, prefix: str, *args: Any, **kwargs: Any) -> bool:
         """Delete a value from cache.

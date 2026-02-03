@@ -11,6 +11,11 @@ from yhteentoimivuusalusta_mcp.tools.terminology import (
     list_vocabularies,
     search_terminology,
 )
+from yhteentoimivuusalusta_mcp.tools.unified import (
+    get_codelist_for_attribute,
+    suggest_references,
+    unified_search,
+)
 from yhteentoimivuusalusta_mcp.tools.validation import validate_terminology
 
 __all__ = [
@@ -24,4 +29,7 @@ __all__ = [
     "get_codes",
     "export_codes_csv",
     "validate_terminology",
+    "unified_search",
+    "suggest_references",
+    "get_codelist_for_attribute",
 ]

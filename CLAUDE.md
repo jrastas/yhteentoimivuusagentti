@@ -37,19 +37,21 @@ yhteentoimivuusalusta-mcp/
 │       ├── server.py              # MCP server entry point
 │       ├── tools/
 │       │   ├── terminology.py     # search_terminology, get_concept_details, list_vocabularies
-│       │   ├── datamodel.py       # search_datamodel, get_datamodel_classes
-│       │   ├── codelist.py        # search_codelist, get_codes
-│       │   └── validation.py      # validate_terminology
+│       │   ├── datamodel.py       # search_datamodel, get_datamodel_classes, get_model_vocabulary_links
+│       │   ├── codelist.py        # search_codelist, get_codes, export_codes_csv
+│       │   ├── validation.py      # validate_terminology
+│       │   └── unified.py         # unified_search, suggest_references, get_codelist_for_attribute
 │       ├── clients/
-│       │   ├── base.py            # Base HTTP client
+│       │   ├── base.py            # Base HTTP client with rate limiting and offline mode
 │       │   ├── sanastot.py        # Sanastot API client
 │       │   ├── tietomallit.py     # Tietomallit API client
 │       │   └── koodistot.py       # Koodistot API client
 │       ├── models/
 │       │   └── schemas.py         # Pydantic models
 │       └── utils/
-│           ├── cache.py           # Caching utilities
+│           ├── cache.py           # Caching utilities with offline mode support
 │           ├── config.py          # Configuration loader
+│           ├── fuzzy.py           # Fuzzy matching utilities
 │           └── nlp.py             # Finnish NLP utilities (optional)
 ├── tests/
 ├── docs/
@@ -57,7 +59,7 @@ yhteentoimivuusalusta-mcp/
 └── config.yaml.example
 ```
 
-## MCP Tools (8 total)
+## MCP Tools (13 total)
 
 | Tool | Platform | Purpose |
 |------|----------|---------|
@@ -66,9 +68,14 @@ yhteentoimivuusalusta-mcp/
 | `list_vocabularies` | Sanastot | List available vocabularies |
 | `search_datamodel` | Tietomallit | Search for data models |
 | `get_datamodel_classes` | Tietomallit | Get classes from a model |
+| `get_model_vocabulary_links` | Tietomallit | Link models to vocabularies |
 | `search_codelist` | Koodistot | Search for code lists |
 | `get_codes` | Koodistot | Get codes from a code list |
+| `export_codes_csv` | Koodistot | Export codes to CSV format |
 | `validate_terminology` | Cross-platform | Validate text against standards |
+| `unified_search` | Cross-platform | Search all platforms simultaneously |
+| `suggest_references` | Cross-platform | Suggest standards for text |
+| `get_codelist_for_attribute` | Cross-platform | Find code lists for data model attributes |
 
 ## API Endpoints
 
@@ -176,21 +183,21 @@ yhteentoimivuusalusta-mcp/
 
 ### Milestone 3.2: Cross-Platform Integration
 - [x] Link vocabulary concepts to data models
-- [ ] Link data model attributes to code lists
-- [ ] Build unified search across platforms
-- [ ] Add "suggest references" functionality
+- [x] Link data model attributes to code lists (`get_codelist_for_attribute`)
+- [x] Build unified search across platforms (`unified_search`)
+- [x] Add "suggest references" functionality (`suggest_references`)
 
 ### Milestone 3.3: Caching & Performance
-- [ ] Implement persistent disk cache
-- [ ] Add cache invalidation (TTL-based)
-- [ ] Optimize API calls (batch where possible)
-- [ ] Add rate limiting protection
-- [ ] Implement offline mode with cached data
+- [x] Implement persistent disk cache
+- [x] Add cache invalidation (TTL-based)
+- [x] Optimize API calls (batch where possible)
+- [x] Add rate limiting protection (token bucket algorithm)
+- [x] Implement offline mode with cached data (stale cache fallback)
 
 **Deliverables:**
-- Complete tool suite (8 tools)
-- Performance optimizations
-- Offline capability
+- [x] Complete tool suite (13 tools - exceeded target!)
+- [x] Performance optimizations (rate limiting)
+- [x] Offline capability (stale cache fallback)
 
 ---
 
