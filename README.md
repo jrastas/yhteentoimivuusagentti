@@ -126,6 +126,21 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 }
 ```
 
+**Option 3: Package as Desktop Extension**
+
+This project includes a `manifest.json` for packaging as an MCP desktop extension:
+
+```bash
+# Install MCPB (MCP Builder)
+npm install -g @anthropic/mcpb
+
+# Package the extension
+mcpb pack
+
+# Install the packaged extension
+mcpb install ./yhteentoimivuusalusta-0.1.0.mcpx
+```
+
 **After configuration, restart Claude Desktop.**
 
 ## Available Tools

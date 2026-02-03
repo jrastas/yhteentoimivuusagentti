@@ -1,0 +1,99 @@
+{
+  "name": "yhteentoimivuusalusta",
+  "version": "0.1.0",
+  "description": "MCP server for Finland's Yhteentoimivuusalusta (Interoperability Platform) - access standardized Finnish terminology, data models, and code lists for government and construction documentation.",
+  "author": "yaskael",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yaskael/yhteentoimivuusagentti"
+  },
+  "homepage": "https://github.com/yaskael/yhteentoimivuusagentti",
+  "keywords": [
+    "mcp",
+    "finland",
+    "interoperability",
+    "terminology",
+    "data-models",
+    "code-lists",
+    "sanastot",
+    "tietomallit",
+    "koodistot",
+    "government",
+    "construction"
+  ],
+  "runtime": "python",
+  "entry": "yhteentoimivuusalusta_mcp.server",
+  "pythonVersion": ">=3.11",
+  "tools": [
+    {
+      "name": "search_terminology",
+      "description": "Search for Finnish government standardized terms and concepts from sanastot.suomi.fi"
+    },
+    {
+      "name": "get_concept_details",
+      "description": "Get detailed information about a concept including terms, definitions, and relationships"
+    },
+    {
+      "name": "list_vocabularies",
+      "description": "List all available vocabularies from sanastot.suomi.fi"
+    },
+    {
+      "name": "search_datamodel",
+      "description": "Search for data models from tietomallit.suomi.fi"
+    },
+    {
+      "name": "get_datamodel_classes",
+      "description": "Get classes and properties from a specific data model"
+    },
+    {
+      "name": "get_model_vocabulary_links",
+      "description": "Find vocabulary concepts linked to a data model"
+    },
+    {
+      "name": "search_codelist",
+      "description": "Search for code lists from koodistot.suomi.fi"
+    },
+    {
+      "name": "get_codes",
+      "description": "Get codes from a specific code list"
+    },
+    {
+      "name": "export_codes_csv",
+      "description": "Export codes to CSV format"
+    },
+    {
+      "name": "validate_terminology",
+      "description": "Validate text against standardized Finnish vocabularies"
+    },
+    {
+      "name": "unified_search",
+      "description": "Search all three platforms (terminology, data models, code lists) simultaneously"
+    },
+    {
+      "name": "suggest_references",
+      "description": "Analyze text and suggest relevant standards to reference"
+    },
+    {
+      "name": "get_codelist_for_attribute",
+      "description": "Find code lists that can be used with data model attributes"
+    }
+  ],
+  "configuration": {
+    "cache_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable response caching"
+    },
+    "cache_directory": {
+      "type": "string",
+      "default": "~/.cache/yhteentoimivuusalusta",
+      "description": "Directory for cached API responses"
+    },
+    "rate_limit": {
+      "type": "number",
+      "default": 10.0,
+      "description": "Maximum API requests per second"
+    }
+  }
+}
