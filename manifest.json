@@ -1,8 +1,14 @@
 {
+  "manifest_version": "0.3",
   "name": "yhteentoimivuusalusta",
+  "display_name": "Yhteentoimivuusalusta",
   "version": "0.1.0",
-  "description": "MCP server for Finland's Yhteentoimivuusalusta (Interoperability Platform) - access standardized Finnish terminology, data models, and code lists for government and construction documentation.",
-  "author": "yaskael",
+  "description": "Access Finland's Interoperability Platform - standardized terminology, data models, and code lists for government and construction documentation.",
+  "long_description": "MCP server that integrates with Finland's Yhteentoimivuusalusta (Interoperability Platform) including:\n\n- **Sanastot** (sanastot.suomi.fi) - Terminologies and vocabularies\n- **Tietomallit** (tietomallit.suomi.fi) - Data models and schemas\n- **Koodistot** (koodistot.suomi.fi) - Code lists and classifications\n\nUse this to ensure proper use of standardized Finnish terminology when writing design documents, technical specifications, or architecture descriptions.",
+  "author": {
+    "name": "yaskael",
+    "url": "https://github.com/yaskael"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,13 +24,25 @@
     "code-lists",
     "sanastot",
     "tietomallit",
-    "koodistot",
-    "government",
-    "construction"
+    "koodistot"
   ],
-  "runtime": "python",
-  "entry": "yhteentoimivuusalusta_mcp.server",
-  "pythonVersion": ">=3.11",
+  "server": {
+    "type": "python",
+    "entry_point": "src/yhteentoimivuusalusta_mcp/server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "yhteentoimivuusalusta_mcp.server"],
+      "env": {
+        "PYTHONPATH": "${__dirname}/src"
+      }
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.11"
+    }
+  },
   "tools": [
     {
       "name": "search_terminology",
@@ -79,21 +97,12 @@
       "description": "Find code lists that can be used with data model attributes"
     }
   ],
-  "configuration": {
-    "cache_enabled": {
-      "type": "boolean",
-      "default": true,
-      "description": "Enable response caching"
-    },
+  "user_config": {
     "cache_directory": {
-      "type": "string",
-      "default": "~/.cache/yhteentoimivuusalusta",
-      "description": "Directory for cached API responses"
-    },
-    "rate_limit": {
-      "type": "number",
-      "default": 10.0,
-      "description": "Maximum API requests per second"
+      "type": "directory",
+      "title": "Cache Directory",
+      "description": "Directory for cached API responses",
+      "required": false
     }
   }
 }
