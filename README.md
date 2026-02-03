@@ -126,22 +126,32 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 }
 ```
 
-**Option 3: Package as Desktop Extension**
+**Option 3: Install as Desktop Extension (MCPB)**
 
-This project includes a `manifest.json` for packaging as an MCP desktop extension:
+This project includes a `manifest.json` (v0.3) for MCPB desktop extensions:
 
 ```bash
-# Install MCPB (MCP Builder)
-npm install -g @anthropic/mcpb
+# Create the bundled extension
+python scripts/create_bundle.py
 
-# Package the extension
-mcpb pack
-
-# Install the packaged extension
-mcpb install ./yhteentoimivuusalusta-0.1.0.mcpx
+# This creates:
+# - build/yhteentoimivuusalusta-0.1.0.mcpb (bundled)
+# - build/unpacked/ (for unpacked installation)
 ```
 
-**After configuration, restart Claude Desktop.**
+**To install the extension:**
+
+1. **Bundled (.mcpb):** Double-click or drag `build/yhteentoimivuusalusta-0.1.0.mcpb` to Claude Desktop
+
+2. **Unpacked (development):** In Claude Desktop settings, add the extension pointing to `build/unpacked/` directory
+
+3. **Using MCPB CLI:**
+   ```bash
+   npm install -g @anthropic-ai/mcpb
+   mcpb install ./build/yhteentoimivuusalusta-0.1.0.mcpb
+   ```
+
+**After installation, restart Claude Desktop.**
 
 ## Available Tools
 
