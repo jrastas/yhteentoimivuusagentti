@@ -157,14 +157,44 @@ def similarity_score(s1: str, s2: str) -> float:
     if RAPIDFUZZ_AVAILABLE:
         return fuzz.WRatio(s1, s2) / 100
     else:
-        # Simple fallback
-        s1_lower = s1.lower()
-        s2_lower = s2.lower()
+        # Fallback using simple Levenshtein ratio
+        return _levenshtein_ratio(s1.lower(), s2.lower())
 
-        if s1_lower == s2_lower:
-            return 1.0
-        if s1_lower in s2_lower or s2_lower in s1_lower:
-            shorter = min(len(s1), len(s2))
-            longer = max(len(s1), len(s2))
-            return shorter / longer
+
+def _levenshtein_ratio(s1: str, s2: str) -> float:
+    """Calculate Levenshtein ratio (similarity) between two strings.
+
+    Args:
+        s1: First string.
+        s2: Second string.
+
+    Returns:
+        Ratio between 0.0 and 1.0 where 1.0 is identical.
+    """
+    if s1 == s2:
+        return 1.0
+
+    len1, len2 = len(s1), len(s2)
+    if len1 == 0 or len2 == 0:
         return 0.0
+
+    # Create distance matrix
+    distances = [[0] * (len2 + 1) for _ in range(len1 + 1)]
+
+    for i in range(len1 + 1):
+        distances[i][0] = i
+    for j in range(len2 + 1):
+        distances[0][j] = j
+
+    for i in range(1, len1 + 1):
+        for j in range(1, len2 + 1):
+            cost = 0 if s1[i - 1] == s2[j - 1] else 1
+            distances[i][j] = min(
+                distances[i - 1][j] + 1,      # deletion
+                distances[i][j - 1] + 1,      # insertion
+                distances[i - 1][j - 1] + cost  # substitution
+            )
+
+    distance = distances[len1][len2]
+    max_len = max(len1, len2)
+    return 1.0 - (distance / max_len)

@@ -258,10 +258,17 @@ class SanastotClient(BaseClient):
                 if term:
                     terms.append(term)
 
-            # Parse relations
-            broader = [r.get("id", r) for r in data.get("broader", [])]
-            narrower = [r.get("id", r) for r in data.get("narrower", [])]
-            related = [r.get("related", r) for r in data.get("related", [])]
+            # Parse relations (handle both string IDs and dict objects)
+            def extract_id(r: Any) -> str:
+                if isinstance(r, str):
+                    return r
+                if isinstance(r, dict):
+                    return r.get("id", r.get("identifier", str(r)))
+                return str(r)
+
+            broader = [extract_id(r) for r in data.get("broader", [])]
+            narrower = [extract_id(r) for r in data.get("narrower", [])]
+            related = [extract_id(r) for r in data.get("related", [])]
 
             return Concept(
                 id=data.get("id", data.get("identifier", "")),

@@ -45,6 +45,73 @@ from yhteentoimivuusalusta_mcp.utils.config import load_config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+class ValidationError(Exception):
+    """Raised when tool arguments fail validation."""
+
+    pass
+
+
+def validate_required(arguments: dict[str, Any], *required_params: str) -> None:
+    """Validate that required parameters are present and non-empty.
+
+    Args:
+        arguments: The tool arguments dict.
+        *required_params: Names of required parameters.
+
+    Raises:
+        ValidationError: If a required parameter is missing or empty.
+    """
+    for param in required_params:
+        if param not in arguments:
+            raise ValidationError(f"Missing required parameter: '{param}'")
+        value = arguments[param]
+        if value is None:
+            raise ValidationError(f"Parameter '{param}' cannot be null")
+        if isinstance(value, str) and not value.strip():
+            raise ValidationError(f"Parameter '{param}' cannot be empty")
+
+
+def validate_max_results(arguments: dict[str, Any], param: str = "max_results") -> int:
+    """Validate and constrain max_results parameter.
+
+    Args:
+        arguments: The tool arguments dict.
+        param: Name of the parameter (default: 'max_results').
+
+    Returns:
+        Validated max_results value (1-1000).
+    """
+    value = arguments.get(param, 10)
+    if not isinstance(value, int) or value < 1:
+        return 10
+    return min(value, 1000)  # Cap at 1000
+
+
+def validate_text_length(arguments: dict[str, Any], param: str, max_length: int = 10000) -> str:
+    """Validate text parameter length.
+
+    Args:
+        arguments: The tool arguments dict.
+        param: Name of the text parameter.
+        max_length: Maximum allowed length.
+
+    Returns:
+        The text value (truncated if needed).
+
+    Raises:
+        ValidationError: If the text parameter is missing.
+    """
+    if param not in arguments:
+        raise ValidationError(f"Missing required parameter: '{param}'")
+    text = arguments[param]
+    if not isinstance(text, str):
+        raise ValidationError(f"Parameter '{param}' must be a string")
+    if len(text) > max_length:
+        logger.warning(f"Text parameter '{param}' truncated from {len(text)} to {max_length} chars")
+        return text[:max_length]
+    return text
+
 # Tool definitions
 TOOLS = [
     Tool(
@@ -491,19 +558,21 @@ class YhteentoimivuusalustaServer:
             Tool result dictionary.
         """
         if name == "search_terminology":
+            validate_required(arguments, "query")
             return await search_terminology(
                 client=self.sanastot,
-                query=arguments["query"],
+                query=arguments["query"].strip(),
                 vocabulary_id=arguments.get("vocabulary_id"),
                 language=arguments.get("language", "fi"),
-                max_results=arguments.get("max_results", 10),
+                max_results=validate_max_results(arguments),
             )
 
         elif name == "get_concept_details":
+            validate_required(arguments, "vocabulary_id", "concept_id")
             return await get_concept_details(
                 client=self.sanastot,
-                vocabulary_id=arguments["vocabulary_id"],
-                concept_id=arguments["concept_id"],
+                vocabulary_id=arguments["vocabulary_id"].strip(),
+                concept_id=arguments["concept_id"].strip(),
                 include_relations=arguments.get("include_relations", True),
             )
 
@@ -515,91 +584,101 @@ class YhteentoimivuusalustaServer:
             )
 
         elif name == "search_datamodel":
+            validate_required(arguments, "query")
             return await search_datamodel(
                 client=self.tietomallit,
-                query=arguments["query"],
+                query=arguments["query"].strip(),
                 model_type=arguments.get("model_type"),
                 domain=arguments.get("domain"),
-                max_results=arguments.get("max_results", 10),
+                max_results=validate_max_results(arguments),
             )
 
         elif name == "get_datamodel_classes":
+            validate_required(arguments, "model_id")
             return await get_datamodel_classes(
                 client=self.tietomallit,
-                model_id=arguments["model_id"],
+                model_id=arguments["model_id"].strip(),
                 class_name=arguments.get("class_name"),
                 include_properties=arguments.get("include_properties", True),
                 include_associations=arguments.get("include_associations", True),
             )
 
         elif name == "get_model_vocabulary_links":
+            validate_required(arguments, "model_id")
             return await get_model_vocabulary_links(
                 tietomallit_client=self.tietomallit,
                 sanastot_client=self.sanastot,
-                model_id=arguments["model_id"],
+                model_id=arguments["model_id"].strip(),
             )
 
         elif name == "search_codelist":
+            validate_required(arguments, "query")
             return await search_codelist(
                 client=self.koodistot,
-                query=arguments["query"],
+                query=arguments["query"].strip(),
                 registry=arguments.get("registry"),
-                max_results=arguments.get("max_results", 10),
+                max_results=validate_max_results(arguments),
             )
 
         elif name == "get_codes":
+            validate_required(arguments, "registry", "scheme")
             return await get_codes(
                 client=self.koodistot,
-                registry=arguments["registry"],
-                scheme=arguments["scheme"],
+                registry=arguments["registry"].strip(),
+                scheme=arguments["scheme"].strip(),
                 status=arguments.get("status", "VALID"),
-                max_results=arguments.get("max_results", 100),
+                max_results=validate_max_results(arguments, "max_results"),
             )
 
         elif name == "export_codes_csv":
+            validate_required(arguments, "registry", "scheme")
             return await export_codes_csv(
                 client=self.koodistot,
-                registry=arguments["registry"],
-                scheme=arguments["scheme"],
+                registry=arguments["registry"].strip(),
+                scheme=arguments["scheme"].strip(),
                 status=arguments.get("status", "VALID"),
                 include_header=arguments.get("include_header", True),
             )
 
         elif name == "validate_terminology":
+            text = validate_text_length(arguments, "text", max_length=50000)
             return await validate_terminology(
                 client=self.sanastot,
-                text=arguments["text"],
+                text=text,
                 vocabularies=arguments.get("vocabularies"),
                 suggest_corrections=arguments.get("suggest_corrections", True),
                 fuzzy_threshold=arguments.get("fuzzy_threshold", 0.8),
             )
 
         elif name == "unified_search":
+            validate_required(arguments, "query")
             return await unified_search(
                 sanastot_client=self.sanastot,
                 tietomallit_client=self.tietomallit,
                 koodistot_client=self.koodistot,
-                query=arguments["query"],
+                query=arguments["query"].strip(),
                 search_terminologies=arguments.get("search_terminologies", True),
                 search_datamodels=arguments.get("search_datamodels", True),
                 search_codelists=arguments.get("search_codelists", True),
-                max_results_per_platform=arguments.get("max_results_per_platform", 5),
+                max_results_per_platform=min(arguments.get("max_results_per_platform", 5), 50),
             )
 
         elif name == "suggest_references":
+            text = validate_text_length(arguments, "text", max_length=50000)
             return await suggest_references(
                 sanastot_client=self.sanastot,
                 tietomallit_client=self.tietomallit,
                 koodistot_client=self.koodistot,
-                text=arguments["text"],
-                max_suggestions=arguments.get("max_suggestions", 10),
+                text=text,
+                max_suggestions=min(arguments.get("max_suggestions", 10), 100),
             )
 
         elif name == "get_codelist_for_attribute":
+            validate_required(arguments, "model_id")
             return await get_codelist_for_attribute(
                 tietomallit_client=self.tietomallit,
                 koodistot_client=self.koodistot,
-                model_id=arguments["model_id"],
+                model_id=arguments["model_id"].strip(),
                 class_name=arguments.get("class_name"),
             )
 
