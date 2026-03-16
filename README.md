@@ -11,6 +11,10 @@ This tool helps when writing design documents, technical specifications, or arch
 - Providing valid code list values for enumerations
 - Validating terminology consistency across documentation
 
+## Warning
+
+This program is coded, poorly, by someone who has absolutely no idea what they are doing. The code is also heavily AI assisted. Use at your own risk and if possible, via Docker.
+
 ### Supported Platforms
 
 | Platform | URL | Content |
